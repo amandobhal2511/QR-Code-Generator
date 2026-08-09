@@ -2,13 +2,20 @@ const input = document.getElementById("qrInput");
 const generateButton = document.getElementById("generateButton");
 const qrContainer = document.getElementById("qrContainer");
 const downloadButton = document.getElementById("downloadButton");
+const errorMessage = document.getElementById("errorMessage");
 let qrCodeData;
-
 
 console.log(input);
 
 generateButton.addEventListener("click", async() => {
     const text = input.value;
+
+    if (text.trim() === "") {
+        errorMessage.classList.remove("hidden");
+        return;
+    }
+
+    errorMessage.classList.add("hidden");
 
     const response = await fetch("http://localhost:8000/generateQR" , {
 
@@ -45,4 +52,12 @@ downloadButton.addEventListener("click", () => {
     link.download = "qr-code.png";
 
     link.click();
+});
+
+
+
+input.addEventListener("input", () => {
+    if (input.value.trim() !== "") {
+        errorMessage.classList.add("hidden");
+    }
 });
