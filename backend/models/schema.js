@@ -1,6 +1,6 @@
-import { pgTable, serial, text, varchar, bytea, timestamp} from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, varchar, timestamp} from 'drizzle-orm/pg-core';
 
-export const table = pgTable('QRdb' , {
+export const qrCodes = pgTable('QRdb' , {
     
     id: serial("id").primaryKey(),
 

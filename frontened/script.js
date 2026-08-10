@@ -1,63 +1,164 @@
 const input = document.getElementById("qrInput");
-const generateButton = document.getElementById("generateButton");
-const qrContainer = document.getElementById("qrContainer");
-const downloadButton = document.getElementById("downloadButton");
-const errorMessage = document.getElementById("errorMessage");
+
+const generateButton =
+    document.getElementById("generateButton");
+
+const qrContainer =
+    document.getElementById("qrContainer");
+
+const downloadButton =
+    document.getElementById("downloadButton");
+
+const errorMessage =
+    document.getElementById("errorMessage");
+
+
 let qrCodeData;
 
-console.log(input);
 
-generateButton.addEventListener("click", async() => {
+
+// GENERATE QR CODE
+
+generateButton.addEventListener("click", async () => {
+
     const text = input.value;
 
+
+    // Frontend Validation
+
     if (text.trim() === "") {
+
         errorMessage.classList.remove("hidden");
+
         return;
+
     }
 
+
+    // Hide error
     errorMessage.classList.add("hidden");
 
-    const response = await fetch("http://localhost:8000/generateQR" , {
 
-        method:"POST",
+    try {
 
-        headers: {
-            "Content-Type": "application/json"
-        },
+        // Send request to backend
 
-        body: JSON.stringify({
-            content:text
-        })
-    });
+        const response = await fetch(
+            "http://localhost:8000/generateQR",
+            {
 
-    const result = await response.json();
-    qrCodeData = result.qrcode;
+                method: "POST",
 
-    const qrImage = document.createElement("img");
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-    qrImage.src = result.qrcode;
+                body: JSON.stringify({
+                    content: text
+                })
 
-    qrContainer.innerHTML = "";
-    qrContainer.appendChild(qrImage);
+            }
+        );
 
-    downloadButton.disabled = false;
+
+        // Convert response to JSON
+
+        const result = await response.json();
+
+
+        
+        // Backend validation/error
+
+        if (!response.ok) {
+
+            errorMessage.textContent =
+                result.message || "Something went wrong";
+
+            errorMessage.classList.remove("hidden");
+
+            return;
+
+        }
+
+
+        // Store QR image data
+
+        qrCodeData = result.qrcode;
+
+
+        // Create QR image
+
+        const qrImage =
+            document.createElement("img");
+
+
+        qrImage.src = result.qrcode;
+
+        qrImage.alt = "Generated QR Code";
+
+        qrImage.className =
+            "w-48 h-48 rounded-xl shadow-md";
+
+
+        // Display QR
+
+        qrContainer.innerHTML = "";
+
+        qrContainer.appendChild(qrImage);
+
+
+        // Enable download button
+
+        downloadButton.disabled = false;
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        errorMessage.textContent =
+            "Unable to connect to the server.";
+
+        errorMessage.classList.remove("hidden");
+
+    }
+
 });
 
+
+
+// DOWNLOAD QR CODE
 
 downloadButton.addEventListener("click", () => {
 
-    const link = document.createElement("a");
+    if (!qrCodeData) {
+        return;
+    }
+
+
+    const link =
+        document.createElement("a");
+
 
     link.href = qrCodeData;
+
     link.download = "qr-code.png";
 
+
     link.click();
+
 });
 
 
 
+// HIDE ERROR WHEN USER STARTS TYPING
+
 input.addEventListener("input", () => {
+
     if (input.value.trim() !== "") {
+
         errorMessage.classList.add("hidden");
+
     }
+
 });

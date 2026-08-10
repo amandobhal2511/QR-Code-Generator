@@ -1,23 +1,58 @@
-import QRcode from 'qrcode';
+import QRCode from 'qrcode';
+import crypto from "crypto";
+import { eq } from "drizzle-orm";
 
-export async function postData(req , res){
-    
+import db from "../db/drizzle.js";
+import { qrCodes } from "../models/schema.js";
+
+export async function postData(req, res) {
+
     const data = req.body;
 
+    // Validation
     if (!data.content || data.content.trim() === "") {
         return res.status(400).json({
-            message: "Please enter some text or URL"
+            message: "Please Enter some text or URL"
         });
     }
 
-    console.log(`User sent this data to convert into QRCode : ${data.content}`);
+    const content = data.content.trim();
 
-    const qrcode = await QRcode.toDataURL(data.content);
+    // Generate hash
+    const contentHash = crypto
+        .createHash("sha256")
+        .update(content)
+        .digest("hex");
 
+    // Check whether this content already exists
+    const existingQR = await db
+        .select()
+        .from(qrCodes)
+        .where(eq(qrCodes.contentHash, contentHash))
+        .limit(1);
 
-    return res.status(201).json({
-        "message":"QR Generated Successfully",
-        "qrcode": qrcode
+    // If already exists, return stored QR
+    if (existingQR.length > 0) {
+
+        return res.status(200).json({
+            message: "QR Already Exists",
+            qrcode: existingQR[0].qrImage
+        });
+    }
+
+    // Generate new QR
+    const qrImage = await QRCode.toDataURL(content);
+
+    // Save new QR in database
+    await db.insert(qrCodes).values({
+        content: content,
+        contentHash: contentHash,
+        qrImage: qrImage
     });
 
+    // Return newly generated QR
+    return res.status(201).json({
+        message: "QR Generated Successfully",
+        qrcode: qrImage
+    });
 }
