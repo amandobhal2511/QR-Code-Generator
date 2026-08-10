@@ -44,7 +44,7 @@ generateButton.addEventListener("click", async () => {
         // Send request to backend
 
         const response = await fetch(
-            "http://localhost:8000/generateQR",
+            "https://qr-code-generator-backend-sepia.vercel.app/",
             {
 
                 method: "POST",
