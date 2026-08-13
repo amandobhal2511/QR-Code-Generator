@@ -23,7 +23,7 @@ QR.Gen allows users to generate downloadable QR codes from any URL or text. Gene
 
 ## 🖥️ Preview
 
-> A live demo will be added after deployment.
+> https://qr-code-generator-puce.vercel.app/
 
 <!-- Add a screenshot here later:
 
